@@ -26,13 +26,6 @@ We require the user to input the following parameters:-
 ## Output
 The project saves the model's weights which can then be loaded and worked on.
 
-## Imports
-```python
-import torch
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-```
 
 ## To Execute
 `python base.py`
