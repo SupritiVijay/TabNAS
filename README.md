@@ -1,7 +1,7 @@
 # TabNAS
 A Neural Network model generalized for any tabular dataset (Classification/Regression Task)
 
-TabNAS is a generalized neural network model that can be feeded any kind of tabular dataset. It has been generalized for both classification as well as regression tasks.
+TabNAS is a generalized neural network model that can be fed any kind of tabular dataset. It has been generalized for both classification as well as regression tasks.
 
 We have benchmarked the model for 4 datasets - two of which are classification tasks while the other two are regression. The datasets tested on are - the [Adult Income dataset](https://archive.ics.uci.edu/ml/datasets/adult), [Car dataset](https://archive.ics.uci.edu/ml/machine-learning-databases/car/), [Housing Prices dataset](https://www.kaggle.com/datasets/lespin/house-prices-dataset)
 
@@ -37,6 +37,6 @@ from tqdm import tqdm
 ## To Execute
 `python base.py`
 
-## Size vs Performnace Tradeoff Graph
+## Size vs Performance Tradeoff Graph
 
 
