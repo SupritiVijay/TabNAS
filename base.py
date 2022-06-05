@@ -49,8 +49,9 @@ class Preprocessor:
 		return data
 
 class Model(torch.nn.Module):
-	def __init__(self, N, m , c, activation, properties,target_var, sorted_columns, embedding_dim = 10, classification=True):
+	def __init__(self, N, m , c, activation, properties,target_var, sorted_columns, embedding_dim = 10, classification=True, device=None):
 		super(Model, self).__init__()
+		self.device = device
 		self.properties = properties
 		N = int(N)
 		m = int(m)
@@ -79,7 +80,10 @@ class Model(torch.nn.Module):
 		self.intermediate_linear = []
 		prev_neurons = int(m/1 + c)
 		for n in  self.intermediate_linear_neurons:
-			self.intermediate_linear.append(torch.nn.Linear(prev_neurons,n))
+			layer = torch.nn.Linear(prev_neurons,n)
+			if self.device is not None:
+				layer = layer.to(self.device)
+			self.intermediate_linear.append(layer)
 			prev_neurons = n
 		self.output_linear = torch.nn.Linear(int(m/(N-1) + c),self.target_count)
 
@@ -89,10 +93,11 @@ class Model(torch.nn.Module):
 				vocab = self.properties[col_name]['categorical']
 				self.count_categorical_features +=1
 				embedding = torch.nn.Embedding(num_embeddings = len(vocab), embedding_dim = self.embedding_dim)
+				if self.device is not None:
+					embedding = embedding.to(self.device)
 				self.categorical_features_embedding.append(embedding)
 			else:
 				self.count_num_features += 1
-
 
 	def forward(self, x_num, x_cat):
 		x = x_num
@@ -156,8 +161,10 @@ def main(data, target_var, classification, lr, N, m, c, activation):
 	preprocessor.preprocess(data)
 	data_transformed = preprocessor.transform(data)
 	dataset = TableDataset(preprocessor.properties, data_transformed, target_var, classification = classification)
-	dataloader = torch.utils.data.DataLoader(dataset, batch_size = 4, shuffle = True)
-	model = Model(N, m , c, activation, preprocessor.properties, target_var, dataset.columns, classification = classification)
+	dataloader = torch.utils.data.DataLoader(dataset, batch_size = 16, shuffle = True)
+	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+	model = Model(N, m , c, activation, preprocessor.properties, target_var, dataset.columns, classification = classification, device=device)
+	model.to(device)
 	if(classification):
 		criterion = torch.nn.CrossEntropyLoss()
 	else:
@@ -168,6 +175,9 @@ def main(data, target_var, classification, lr, N, m, c, activation):
 		running_acc = 0.0
 		bar = tqdm(dataloader,disable = True)
 		for i,(batch_x_cat, batch_x_num, batch_y) in  enumerate(bar):
+			batch_x_num = batch_x_num.to(device)
+			batch_x_cat = batch_x_cat.to(device)
+			batch_y = batch_y.to(device)
 			optimizer.zero_grad()
 			out = model(batch_x_num,batch_x_cat)
 			loss = criterion(out, batch_y)

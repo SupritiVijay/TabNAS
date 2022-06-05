@@ -75,8 +75,10 @@ class NAS:
 	def search(self, num_iterations, pop_size = 100):
 		pop = self.random_pop_gen(pop_size)
 		bar = tqdm(range(num_iterations))
+		progress = []
 		for i in bar:
 			pop,loss,acc = self.next_generation_generator(pop)
+			progress.append([i+1, loss, acc])
 			if(self.classification):
 				bar.set_description(str({"i":i,"gen_loss":round(loss,3),"gen_acc":round(acc,3)}))
 			else:
@@ -86,18 +88,13 @@ class NAS:
 		N,m,c,activation = optimal_hyperparam
 		loss,acc,model = runner(self.data, self.target_var, self.classification, self.lr, N, m, c, activation)
 		print(N,m,c,activation,loss,acc)
-		return model
+		return model, progress, N, m, c, activation, loss, acc
 
 if __name__ == '__main__':
-	data = read_file("adult.csv")
+	data = read_file("./data/adult.csv")
 	target_var = 'income'
 	classification = True
 	lr = 0.001
 
 	nas = NAS(data, target_var, classification, lr)
 	model = nas.search(10,16)
-
-
-		
-
-
